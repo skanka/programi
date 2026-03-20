@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-import os, tempfile, subprocess, io
+import os, tempfile, subprocess, io, shutil
 
 try:
     from rdkit import Chem
@@ -10,10 +10,12 @@ except ImportError:
     RDKIT_READY = False
 
 # --- ПЪТЯТ ДО FIORA ---
-FIORA_SCRIPT = r"C:\Users\skank\AppData\Local\Programs\Python\Python313\Scripts\fiora-predict"
+# Вече не използваме локален път, а директно името на командата
+FIORA_CMD = "fiora-predict"
 
 def check_fiora():
-    return os.path.exists(FIORA_SCRIPT)
+    # shutil.which проверява дали командата съществува в системата (в облака)
+    return shutil.which(FIORA_CMD) is not None
 
 def draw_mirror_plot(exp_df, sim_df, ion_mode):
     fig = go.Figure()
@@ -35,7 +37,7 @@ st.set_page_config(page_title="FIORA Advanced Pro", layout="wide")
 st.title("🔬 FIORA: Пълен Мас-анализ (Mnova Ready)")
 
 if not check_fiora():
-    st.error(f"❌ Проблем с пътя: {FIORA_SCRIPT}")
+    st.error(f"❌ Проблем с пътя: Не намирам инсталирана команда '{FIORA_CMD}'. Провери requirements.txt!")
 else:
     st.sidebar.success("✅ FIORA е готова!")
 
@@ -79,14 +81,9 @@ if uploaded_file and check_fiora():
             elif ';' in content: df = safe_read(';')
             else: df = safe_read(',')
         
-        # 💡 ИНТЕЛИГЕНТНО ИЗВЛИЧАНЕ НА КОЛОНИТЕ (Решава проблема с дублиращите се имена)
-        # 1. Почистваме имената от интервали
         df.columns = [str(col).strip() for col in df.columns]
         
-        # 2. Търсим точно една колона за m/z
         mz_col = next((c for c in df.columns if c.lower() in ['m/z', 'mass', 'mz']), None)
-        
-        # 3. Търсим точно една колона за Интензитет (приоритет: Intensity > Abundance > Height)
         int_col = None
         for name in ['intensity', 'abundance', 'height', 'rel. abundance']:
             for c in df.columns:
@@ -98,14 +95,10 @@ if uploaded_file and check_fiora():
         if not mz_col or not int_col:
             st.error(f"Грешка: Не мога да намеря подходящи колони за маса и интензитет. Намерени са: {list(df.columns)}")
         else:
-            # Създаваме нова чиста таблица САМО с тези две колони
             clean_data = pd.DataFrame()
-            
-            # Вече сме сигурни, че подаваме само 1D Array (Series)
             clean_data['m/z'] = pd.to_numeric(df[mz_col], errors='coerce')
             clean_data['Intensity'] = pd.to_numeric(df[int_col], errors='coerce')
             
-            # Махаме редовете с текст (ако Mnova е сложила букви при числата)
             clean_data = clean_data.dropna(subset=['m/z', 'Intensity'])
             
             clean_data['Rel_Int'] = (clean_data['Intensity'] / clean_data['Intensity'].max()) * 100
@@ -137,7 +130,9 @@ if uploaded_file and check_fiora():
                         in_f = tmp.name
                     
                     out_f = in_f.replace('.csv', '.mgf')
-                    fiora_cmd = f'python "{FIORA_SCRIPT}" -i "{in_f}" -o "{out_f}"'
+                    
+                    # Променено извикване за облака (директно изпълнява fiora-predict)
+                    fiora_cmd = f'{FIORA_CMD} -i "{in_f}" -o "{out_f}"'
                     
                     try:
                         subprocess.run(fiora_cmd, shell=True, check=True, capture_output=True, text=True)
