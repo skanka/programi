@@ -8,7 +8,7 @@ scipy
 fpdf2
 pyDOE2
 pyDOE3
-kaleido==0.1.0.post1
+kaleido==0.1.0
 openpyxl
 xlsxwriter
 reportlab
