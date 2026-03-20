@@ -11,7 +11,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, Spacer, Imag
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
-from reportlab.lib.units import cm  # <-- ФИКСИРАНО: Импортиран е cm за полетата на PDF-а
+from reportlab.lib.units import cm  # Импортиран е cm за полетата на PDF-а
 import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="HPLC Pro Interactive Protocol", layout="wide")
@@ -384,14 +384,34 @@ with tabs[5]:
                 elements.append(Spacer(1, 5))
             elements.append(Spacer(1, 15))
 
-            # 4. Chromatogram Image
+            # 4. Chromatogram Image (ПРЕПРАВЕНО С MATPLOTLIB ЗА СИГУРНОСТ)
             elements.append(Paragraph("4. Chromatogram", styles['Heading2']))
             try:
-                img_bytes = fig_chrom.to_image(format="png", width=500, height=300)
-                img_io = BytesIO(img_bytes)
-                elements.append(RLImage(img_io, width=14*cm, height=8*cm))
+                # Създаваме хроматограмата наново само за PDF-а
+                fig_chrom_pdf, ax_chrom = plt.subplots(figsize=(7, 4))
+                max_rt_pdf = chrom_data["RT(min)"].max() if not chrom_data.empty else 5.0
+                x_axis_pdf = np.linspace(0, max_rt_pdf * 1.5, 1000)
+                colors_dict_pdf = {"Standard": "blue", "Sample": "red"}
+                
+                for _, row in chrom_data.iterrows():
+                    if row["Width"] > 0:
+                        amplitude = row["Area"] / (row["Width"] * np.sqrt(2 * np.pi))
+                        y_axis_pdf = amplitude * norm.pdf(x_axis_pdf, row["RT(min)"], row["Width"])
+                        ax_chrom.plot(x_axis_pdf, y_axis_pdf, color=colors_dict_pdf.get(row['Type'], 'green'), label=f"{row['Peak Name']} ({row['Type']})")
+                
+                ax_chrom.set_title("Simulated HPLC Chromatogram")
+                ax_chrom.set_xlabel("Retention Time (min)")
+                ax_chrom.set_ylabel("Absorbance (mAU)")
+                ax_chrom.legend()
+                ax_chrom.grid(True, linestyle=':', alpha=0.6)
+                
+                buf_chrom = BytesIO()
+                fig_chrom_pdf.savefig(buf_chrom, format='png', bbox_inches='tight')
+                buf_chrom.seek(0)
+                elements.append(RLImage(buf_chrom, width=14*cm, height=8*cm))
+                plt.close(fig_chrom_pdf)
             except Exception as e:
-                elements.append(Paragraph(f"<i>Could not render Plotly image. Ensure 'kaleido' is installed. Error: {str(e)}</i>", styles['Normal']))
+                elements.append(Paragraph(f"<i>Could not render chromatogram image. Error: {str(e)}</i>", styles['Normal']))
             elements.append(Spacer(1, 20))
 
             # 5. Calibration
