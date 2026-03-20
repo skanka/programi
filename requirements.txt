@@ -12,3 +12,4 @@ kaleido==0.1.0
 openpyxl
 xlsxwriter
 reportlab
+matplotlib
