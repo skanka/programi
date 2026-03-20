@@ -14,4 +14,3 @@ xlsxwriter
 reportlab
 rdkit
 matplotlib
-kaleido==0.1.0.post1
