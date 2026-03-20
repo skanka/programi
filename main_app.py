@@ -21,8 +21,7 @@ with col1:
     if st.button("📈 Box-Behnken Design", use_container_width=True):
         st.switch_page("pages/Box- benhken.py")
     
-    if st.button("🔬 MS App Analysis", use_container_width=True):
-        st.switch_page("pages/MS_app.py")
+   
     
     # НОВИЯТ МОДУЛ
     if st.button("🧮 MS Calculator", use_container_width=True):
@@ -40,9 +39,7 @@ with col2:
         st.switch_page("pages/TFC TPC.py")
 
 with col3:
-    st.markdown("### 📁 Бази данни и Протоколи")
-    if st.button("📂 Database Search", use_container_width=True):
-        st.switch_page("pages/database_search.py")
+    st.markdown("### 📁 Протоколи")
     
     if st.button("📋 Protokol ALV", use_container_width=True):
         st.switch_page("pages/protokol alv.py")
