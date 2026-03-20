@@ -1,6 +1,6 @@
 libnss3
 libxss1
-libasound2
+libasound2t64
 libatk1.0-0
 libcairo2
 libcups2
@@ -9,7 +9,7 @@ libexpat1
 libfontconfig1
 libgbm1
 libgcc-s1
-libgdk-pixbuf2.0-0
+libgdk-pixbuf-2.0-0
 libglib2.0-0
 libgtk-3-0
 libnspr4
@@ -28,8 +28,5 @@ libxi6
 libxrandr2
 libxrender1
 libxtst6
-ca-certificates
 fonts-liberation
-libappindicator3-1
-lsb-release
 xdg-utils
