@@ -1,3 +1,0 @@
-libnss3
-libxss1
-chromium
