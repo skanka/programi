@@ -27,6 +27,8 @@ with col1:
     st.write("- Box-Behnken Design")
     st.write("- HPLC Database & Results")
     st.write("- MS App Analysis")
+    st.write("-  MS Calculator")
+   
 
 with col2:
     st.info("🧬 **Физикохимични модули:**")
