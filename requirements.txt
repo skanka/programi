@@ -12,5 +12,4 @@ kaleido
 openpyxl
 xlsxwriter
 reportlab
-fiora
 rdkit
